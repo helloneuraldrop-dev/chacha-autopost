@@ -1,0 +1,10 @@
+{
+ "name": "chacha-autopost",
+ "private": true,
+ "type": "module",
+ "scripts": {
+  "check": "node publish.mjs --check",
+  "publish": "node publish.mjs",
+  "token": "node token.mjs"
+ }
+}
