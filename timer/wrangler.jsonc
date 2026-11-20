@@ -1,0 +1,8 @@
+{
+  "name": "chacha-timer",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": false,
+  // UTC 14:00 and 14:30 = 19:30 / 20:00 IST, same as post.yml (the 14:30 run finds nothing due if 14:00 posted)
+  "triggers": { "crons": ["0,30 14 * * *"] }
+}
