@@ -44,12 +44,13 @@ async function upload(tok, it) {
   return { videoId: v.id, url: `https://youtube.com/shorts/${v.id}`, privacy: v.status?.privacyStatus };
 }
 
+// gate before login: while uploads are off, a Google hiccup must not fail the Instagram run
+if (!CHECK && env("YT_LIVE") !== "1") { log(`YouTube uploads off until the API audit passes (YT_LIVE). Due: ${due.map((it) => it.id).join(", ") || "nothing"}`); process.exit(0); }
 const tok = await accessToken();
 const me = await (await api(tok, "https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true")).json();
 const name = me.items?.[0]?.snippet?.title;
 if (name !== "Chacha Kanjoos") throw new Error(`YT_AUTH is for channel "${name}", not Chacha Kanjoos`); // never upload to another channel
 if (CHECK) { log(`login ok: ${name}; due now: ${due.map((it) => it.id).join(", ") || "nothing"}; YT_LIVE=${env("YT_LIVE") || "off"}`); process.exit(0); }
-if (env("YT_LIVE") !== "1") { log(`YouTube uploads off until the API audit passes (YT_LIVE). Due: ${due.map((it) => it.id).join(", ") || "nothing"}`); process.exit(0); }
 if (!due.length) { log("YouTube: nothing due"); process.exit(0); }
 
 let failed = 0;
