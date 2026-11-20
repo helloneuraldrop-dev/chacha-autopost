@@ -30,7 +30,7 @@ const t = await (await fetch("https://oauth2.googleapis.com/token", { method: "P
 if (!t.refresh_token) { console.log(`✗ no refresh token: ${t.error ?? ""} ${t.error_description ?? ""}`); process.exit(1); }
 const me = await (await fetch("https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true", { headers: { Authorization: `Bearer ${t.access_token}` } })).json();
 const name = me.items?.[0]?.snippet?.title;
-if (name !== "Chacha Kanjoos") { console.log(`✗ signed in as channel "${name}", not Chacha Kanjoos. Run again and pick the Chacha Kanjoos channel.`); process.exit(1); }
+if (name !== "Chacha Kanjoos") { console.log(me.error ? `✗ YouTube API error: ${me.error.message}` : `✗ signed in as channel "${name}", not Chacha Kanjoos. Run again and pick the Chacha Kanjoos channel.`); process.exit(1); }
 
 const val = JSON.stringify({ client_id: c.client_id, client_secret: c.client_secret, refresh_token: t.refresh_token });
 const envFile = p(".env");
