@@ -72,7 +72,7 @@ for (const it of due) {
     try {
       res = it.type === "carousel"
         ? await publishCarousel({ urls: it.images.map(url), caption: it.caption })
-        : await publishReel({ video: p(it.video), caption: it.caption, coverUrl: it.cover ? url(it.cover) : undefined, trial });
+        : await publishReel({ video: p(it.video), videoUrl: BASE ? url(it.video) : undefined, caption: it.caption, coverUrl: it.cover ? url(it.cover) : undefined, trial });
     } catch (e) {
       // only an error about the trial itself; anything else may have half-posted, so it stays a failure
       if (!trial || !/trial/i.test(e.message)) throw e;

@@ -72,12 +72,24 @@ async function uploadChunks(containerId, bytes, chunk) {
 }
 
 /** Reel from a local mp4 (keep it under ~20 MB: Instagram rejects big uploads at the last chunk). */
-export async function publishReel({ video, caption, coverUrl, trial }) {
-  const params = { media_type: "REELS", upload_type: "resumable", caption, share_to_feed: "true" };
+export async function publishReel({ video, videoUrl, caption, coverUrl, trial }) {
+  const params = { media_type: "REELS", caption, share_to_feed: "true" };
   // trial reel: shown to non-followers only. MANUAL = you share it to followers in the app (the API cannot do that step).
   if (trial) params.trial_params = JSON.stringify({ graduation_strategy: "MANUAL" });
   if (coverUrl) params.cover_url = coverUrl;
   else params.thumb_offset = "0";
+  // Instagram fetches the public URL itself. From 22 Nov 2026 the resumable upload refused every file (ProcessingFailedError
+  // on the last chunk) while video_url worked, so the URL goes first and the local upload is the fallback.
+  if (videoUrl) {
+    let ready = "";
+    try {
+      const c = await call("POST", `${graph()}/${igUser()}/media`, { ...params, video_url: videoUrl });
+      await waitFinished(c.id, 60, 10000, "reel");
+      ready = c.id;
+    } catch (e) { log(`video_url upload failed (${e.message}), trying the direct upload`); }
+    if (ready) { log(`fetched from URL, container ${ready}`); return publish(ready); }  // outside the try: a publish error must not post twice
+  }
+  params.upload_type = "resumable";
   const bytes = fs.readFileSync(video);
   let containerId = "";
   for (const [n, mb] of [2, 1, 0.5, 2, 1].entries()) {  // the upload server sometimes refuses a file for a few minutes
